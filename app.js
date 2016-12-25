@@ -4,6 +4,7 @@ const ProductList = React.createClass({
   getInitialState: function() {
     return {
       products: [],
+      sort: 'ascending',
     }
   },
   componentDidMount: function() {
@@ -24,6 +25,29 @@ const ProductList = React.createClass({
     })
     this.updateState()
   },
+  handleProductDownVote: function(productId) {
+    Data.forEach((el) => {
+      if (el.id === productId) {
+        el.votes = el.votes - 1
+        return
+      }
+    })
+    this.updateState()
+  },
+  handleProductSort: function() {
+    const sort = this.state.sort
+    if (sort === 'ascending') {
+      const products = Data.sort((a, b) => {
+        return a.votes - b.votes
+      })
+      this.setState({ products, sort: 'descending' })
+    } else {
+      const products = Data.sort((a, b) => {
+        return b.votes - a.votes
+      })
+      this.setState({ products, sort: 'descending' })
+    }
+  },
   render: function() {
     const products = this.state.products.map((product) => {
       return (
@@ -37,11 +61,13 @@ const ProductList = React.createClass({
           submitter_avatar_url={product.submitter_avatar_url}
           product_image_url={product.product_image_url}
           onVote={this.handleProductUpVote}
+          downVote={this.handleProductDownVote}
         />
       )
     })
     return(
       <div className="ui items">
+        <button onClick={this.handleProductSort}>Sort</button>
         {products}
       </div>
     )
@@ -51,6 +77,9 @@ const ProductList = React.createClass({
 const Product = React.createClass({
   handleUpVote: function() {
     this.props.onVote(this.props.id)
+  },
+  handleDownVote: function() {
+    this.props.downVote(this.props.id)
   },
   render: function() {
     return (
@@ -62,6 +91,9 @@ const Product = React.createClass({
           <div className="header">
             <a onClick={this.handleUpVote}>
               <i className="large caret up icon"></i>
+            </a>
+            <a onClick={this.handleDownVote}>
+              <i className="large caret down icon"></i>
             </a>
             {this.props.votes}
           </div>
